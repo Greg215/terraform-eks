@@ -1,0 +1,26 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.4.4
+
+parameters:
+  terraform_apply:
+    type: boolean
+    default: true
+  terraform_destroy:
+    type: boolean
+    default: false
+
+
+workflows:
+  terraform_create_eks_cluster:
+    when: << pipeline.parameters.terraform_apply >>
+    jobs:
+      - slack/approval-notification:
+          message: 'Approval for EKS creation or reapply. This will change the existing infrastructure! triggered by $CIRCLE_USERNAME'
+          channel: circleci-notification
+          color: '#FF00FF'
+          url: 'https://circleci.com/workflow-run/${CIRCLE_WORKFLOW_ID}'
+          filters:
+            branches:
+              only: master
