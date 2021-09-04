@@ -13,6 +13,8 @@ parameters:
 
 jobs:
   slack_notify:
+    machine:
+      image: ubuntu-1604:202007-01
     steps:
       - slack/notify:
           message: 'Start to Create or Update the EKS cluster via terraform by $CIRCLE_USERNAME'
