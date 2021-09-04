@@ -17,7 +17,22 @@ jobs:
       image: ubuntu-1604:202007-01
     steps:
       - slack/notify:
-          custom: 'Start to Create or Update the EKS cluster via terraform by $CIRCLE_USERNAME'
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "Start to Create or Update the EKS cluster via terraform by $CIRCLE_USERNAME",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
           channel: circleci-notification
 
 workflows:
