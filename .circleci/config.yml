@@ -107,7 +107,7 @@ jobs:
           event: always
           channel: circleci-notification
 
-  terraform_apply:
+  terraform_init:
     docker:
       - image: hashicorp/terraform:1.0.5
     steps:
@@ -120,8 +120,18 @@ jobs:
           path: .
       - terraform/plan:
           path: .
-#      - terraform/apply:
-#          path: .
+
+  terraform_apply:
+    docker:
+      - image: hashicorp/terraform:1.0.5
+    steps:
+      - checkout
+      - terraform/init:
+          path: .
+      - terraform/plan:
+          path: .
+      - terraform/apply:
+          path: .
 
 workflows:
   terraform_create_eks_cluster:
@@ -129,10 +139,10 @@ workflows:
     jobs:
       - slack_notify
 
-      - terraform_apply:
+      - terraform_init:
           requires:
             - slack_notify
 
       - slack_approve:
           requires:
-            - terraform_apply
+            - terraform_init
