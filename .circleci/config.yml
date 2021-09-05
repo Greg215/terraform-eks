@@ -29,6 +29,9 @@ jobs:
                       "emoji": true
                     }
                   ]
+                },
+                {
+                  "type": "divider"
                 }
               ]
             }
