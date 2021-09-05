@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.4.4
+  terraform: circleci/terraform@3.0.0
 
 parameters:
   terraform_apply:
@@ -50,9 +51,12 @@ jobs:
             			"type": "section",
             			"text": {
             				"type": "mrkdwn",
-            				"text": "Confirm Infra change to EKS cluster."
+            				"text": "Confirm Infra change to EKS cluster start by $CIRCLE_USERNAME."
             			}
             		},
+                    {
+                      "type": "divider"
+                    }
             		{
             			"type": "section",
             			"fields": [
@@ -95,14 +99,36 @@ jobs:
             				}
             			]
             		}
+                    {
+                      "type": "divider"
+                    }
             	]
             }
           event: always
           channel: circleci-notification
+
+  terraform_apply:
+    docker:
+      - image: hashicorp/terraform:1.0.5
+    steps:
+      - checkout
+      - terraform/init:
+          path: .
+      - terraform/validate:
+          path: .
+      - terraform/fmt:
+          path: .
+      - terraform/plan:
+          path: .
+#      - terraform/apply:
+#          path: .
+
 workflows:
   terraform_create_eks_cluster:
     when: << pipeline.parameters.terraform_apply >>
     jobs:
       - slack_notify
+
+      - terraform_apply
 
       - slack_approve
