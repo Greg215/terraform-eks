@@ -146,3 +146,7 @@ workflows:
       - slack_approve:
           requires:
             - terraform_init
+
+      - terraform_apply:
+          requires:
+            - slack_approve
