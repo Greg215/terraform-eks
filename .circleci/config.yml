@@ -56,7 +56,7 @@ jobs:
             		},
                     {
                       "type": "divider"
-                    }
+                    },
             		{
             			"type": "section",
             			"fields": [
@@ -98,7 +98,7 @@ jobs:
             					"value": "click_me_123"
             				}
             			]
-            		}
+            		},
                     {
                       "type": "divider"
                     }
