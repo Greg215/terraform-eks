@@ -38,8 +38,71 @@ jobs:
           event: always
           channel: circleci-notification
 
+  slack_approve:
+    machine:
+      image: ubuntu-1604:202007-01
+    steps:
+      - slack/notify:
+          custom: |
+            {
+            	"blocks": [
+            		{
+            			"type": "section",
+            			"text": {
+            				"type": "mrkdwn",
+            				"text": "Confirm Infra change to EKS cluster."
+            			}
+            		},
+            		{
+            			"type": "section",
+            			"fields": [
+            				{
+            					"type": "mrkdwn",
+            					"text": "*Type:*\nTerraform Apply"
+            				},
+            				{
+            					"type": "mrkdwn",
+            					"text": "*Reason:*\nNew change to EKS infra."
+            				},
+            				{
+            					"type": "mrkdwn",
+            					"text": "*Specs:*\nVisionGrp EKS change to Training Account"
+            				}
+            			]
+            		},
+            		{
+            			"type": "actions",
+            			"elements": [
+            				{
+            					"type": "button",
+            					"text": {
+            						"type": "plain_text",
+            						"emoji": true,
+            						"text": "Approve"
+            					},
+            					"style": "primary",
+            					"value": "click_me_123"
+            				},
+            				{
+            					"type": "button",
+            					"text": {
+            						"type": "plain_text",
+            						"emoji": true,
+            						"text": "Deny"
+            					},
+            					"style": "danger",
+            					"value": "click_me_123"
+            				}
+            			]
+            		}
+            	]
+            }
+          event: always
+          channel: circleci-notification
 workflows:
   terraform_create_eks_cluster:
     when: << pipeline.parameters.terraform_apply >>
     jobs:
       - slack_notify
+
+      - slack_approve
