@@ -7,10 +7,10 @@ orbs:
 parameters:
   terraform_apply:
     type: boolean
-    default: true
+    default: false
   terraform_destroy:
     type: boolean
-    default: false
+    default: true
 
 jobs:
   slack_notify:
@@ -26,7 +26,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "Start to Create or Update the EKS cluster via terraform by $CIRCLE_USERNAME",
+                      "text": "Start to Create or Update or Remove the EKS cluster via terraform by $CIRCLE_USERNAME",
                       "emoji": true
                     }
                   ]
@@ -133,6 +133,18 @@ jobs:
       - terraform/apply:
           path: .
 
+  terraform_destroy:
+    docker:
+      - image: hashicorp/terraform:1.0.5
+    steps:
+      - checkout
+      - terraform/init:
+          path: .
+      - terraform/plan:
+          path: .
+      - terraform/destroy:
+          path: .
+
 workflows:
   terraform_create_eks_cluster:
     when: << pipeline.parameters.terraform_apply >>
@@ -148,5 +160,22 @@ workflows:
             - terraform_init
 
       - terraform_apply:
+          requires:
+            - slack_approve
+
+  terraform_remove_eks_cluster:
+    when: << pipeline.parameters.terraform_destroy >>
+    jobs:
+      - slack_notify
+
+      - terraform_init:
+          requires:
+            - slack_notify
+
+      - slack_approve:
+          requires:
+            - terraform_init
+
+      - terraform_destroy:
           requires:
             - slack_approve
