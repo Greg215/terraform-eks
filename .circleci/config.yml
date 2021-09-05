@@ -129,6 +129,10 @@ workflows:
     jobs:
       - slack_notify
 
-      - terraform_apply
+      - terraform_apply:
+          requires:
+            - slack_notify
 
-      - slack_approve
+      - slack_approve:
+          requires:
+            - terraform_apply
