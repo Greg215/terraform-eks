@@ -109,7 +109,7 @@ jobs:
 
   terraform_init:
     docker:
-      - image: hashicorp/terraform:0.12.31
+      - image: hashicorp/terraform:1.0.5
     steps:
       - checkout
       - terraform/init:
@@ -122,10 +122,13 @@ jobs:
           path: .
 
   terraform_apply:
-    docker:
-      - image: hashicorp/terraform:0.12.31
+    executor: terraform/default
     steps:
       - checkout
+      - terraform/intsall:
+          arch: amd64
+          os: linux
+          terraform_version: 1.0.5
       - terraform/init:
           path: .
       - terraform/plan:
@@ -135,7 +138,7 @@ jobs:
 
   terraform_destroy:
     docker:
-      - image: hashicorp/terraform:0.12.31
+      - image: hashicorp/terraform:1.0.5
     steps:
       - checkout
       - terraform/init:
