@@ -1,11 +1,10 @@
 name               = "greg-eks-example"
-vpc_cidr           = "172.31.208.0/22"
+cidr_block         = "172.31.208.0/22"
 key_name           = "devops-training"
 kubernetes_version = "1.21"
 
-route53_zone_id = "Z07374591FC76OBQXEXUL"
-domian          = "training.visiontech.com.sg"
-image_id        = "ami-0afeae4543435bb1b"
+subdomian = "training.visiontech.com.sg"
+image_id  = "ami-0afeae4543435bb1b"
 
 instance_type = "t3.small"
 min_size      = 1

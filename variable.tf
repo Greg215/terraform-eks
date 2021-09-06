@@ -18,7 +18,7 @@ variable "cidr_block" {
 variable "name" {
   type        = string
   description = "The name of the eks worker cluster."
-  default = "greg-eks-demo"
+  default     = "greg-eks-demo"
 }
 
 variable "instance_type" {
@@ -77,13 +77,13 @@ variable "cluster_security_group_id" {
 variable "key_name" {
   type        = string
   description = "SSH key name that should be used for the instance"
-  default = "devops-training"
+  default     = "devops-training"
 }
 
 variable "image_id" {
   type        = string
   description = "EC2 image ID to launch. If not provided, the module will lookup the most recent EKS AMI. See https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html for more details on EKS-optimized images"
-  default = "ami-0afeae4543435bb1b"
+  default     = "ami-0afeae4543435bb1b"
 }
 
 variable "additional_security_group_ids" {

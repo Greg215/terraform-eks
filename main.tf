@@ -102,7 +102,7 @@ module "eks_cluster" {
 
 module "route53" {
   source  = "github.com/Greg215/terraform-modules//route53-records"
-  zone_id = "Z03161452U35E8DY2I82Q"
+  zone_id = "Z07374591FC76OBQXEXUL"
   type    = "CNAME"
 
   records = [
