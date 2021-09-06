@@ -7,10 +7,10 @@ orbs:
 parameters:
   terraform_apply:
     type: boolean
-    default: true
+    default: false
   terraform_destroy:
     type: boolean
-    default: false
+    default: true
 
 jobs:
   slack_notify:
@@ -141,21 +141,23 @@ jobs:
       - terraform/apply:
           path: .
 
-#  terraform_destroy:
-#    machine:
-#      image: ubuntu-1604:202007-01
-#    steps:
-#      - checkout
-#      - terraform/install:
-#          arch: amd64
-#          os: linux
-#          terraform_version: 1.0.5
-#      - terraform/init:
-#          path: .
-#      - terraform/plan:
-#          path: .
-#      - terraform/destroy:
-#          path: .
+  terraform_destroy:
+    machine:
+      image: ubuntu-1604:202007-01
+    steps:
+      - checkout
+      - terraform/install:
+          arch: amd64
+          os: linux
+          terraform_version: 1.0.5
+      - terraform/init:
+          path: .
+      - terraform/plan:
+          path: .
+      - run:
+          name: "Destruction of env"
+          command: |
+            terraform destroy --auto-approve -input=false
 
 workflows:
   terraform_create_eks_cluster:
@@ -201,8 +203,7 @@ workflows:
           persist-workspace: true
           requires:
             - terraform/validate
-      - terraform/destroy:
-          attach-workspace: true
+      - terraform_destroy:
           filters:
             branches:
               only: master
