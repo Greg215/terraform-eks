@@ -23,7 +23,7 @@ module "network_loadbalancer" {
   name                           = var.name
   vpc_id                         = module.eks_vpc.vpc_id
   vpc_public_subnet_ids          = module.eks_subnets.public_subnet_ids
-  aws-load-balancer-ssl-cert-arn = "arn:aws:acm:eu-central-1:898846401548:certificate/76ba5a65-c64b-46b7-95e3-6eba2b9206c8"
+  aws-load-balancer-ssl-cert-arn = var.aws-load-balancer-ssl-cert-arn
 
   listeners = [
     {
