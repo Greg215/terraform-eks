@@ -130,6 +130,10 @@ jobs:
           arch: amd64
           os: linux
           terraform_version: 1.0.5
+      - run:
+          name: install curl
+          command: |
+            sudo apt install curl -y
       - terraform/init:
           path: .
       - terraform/plan:
