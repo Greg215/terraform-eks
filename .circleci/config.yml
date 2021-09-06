@@ -141,21 +141,21 @@ jobs:
       - terraform/apply:
           path: .
 
-  terraform_destroy:
-    machine:
-      image: ubuntu-1604:202007-01
-    steps:
-      - checkout
-      - terraform/install:
-          arch: amd64
-          os: linux
-          terraform_version: 1.0.5
-      - terraform/init:
-          path: .
-      - terraform/plan:
-          path: .
-      - terraform/destroy:
-          path: .
+#  terraform_destroy:
+#    machine:
+#      image: ubuntu-1604:202007-01
+#    steps:
+#      - checkout
+#      - terraform/install:
+#          arch: amd64
+#          os: linux
+#          terraform_version: 1.0.5
+#      - terraform/init:
+#          path: .
+#      - terraform/plan:
+#          path: .
+#      - terraform/destroy:
+#          path: .
 
 workflows:
   terraform_create_eks_cluster:
@@ -188,6 +188,27 @@ workflows:
           requires:
             - terraform_init
 
-      - terraform_destroy:
+      - terraform/fmt:
+          checkout: true
+          context: terraform
           requires:
             - slack_approve
+      - terraform/validate:
+          checkout: true
+          context: terraform
+          requires:
+            - terraform/fmt
+      - terraform/plan:
+          checkout: true
+          context: terraform
+          persist-workspace: true
+          requires:
+            - terraform/validate
+      - terraform/destroy:
+          attach-workspace: true
+          context: terraform
+          filters:
+            branches:
+              only: master
+          requires:
+            - terraform/plan
