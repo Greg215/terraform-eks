@@ -7,7 +7,7 @@ route53_zone_id = "Z07374591FC76OBQXEXUL"
 domian          = "training.visiontech.com.sg"
 image_id        = "ami-0afeae4543435bb1b"
 
-instance_type = "ts.small"
+instance_type = "t3.small"
 min_size      = 1
 max_size      = 5
 

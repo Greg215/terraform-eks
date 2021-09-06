@@ -1,36 +1,29 @@
-locals {
-  # enforce usage of eks_worker_ami_name_filter variable to set the right kubernetes version for EKS workers,
-  # otherwise the first version of Kubernetes supported by AWS (v1.11) for EKS workers will be used, but
-  # EKS control plane will use the version specified by kubernetes_version variable.
-  eks_worker_ami_name_filter = "amazon-eks-node-${var.kubernetes_version}*"
-  cluster_name               = module.eks_cluster.eks_cluster_id
-  kubernetes_config_map_id   = module.eks_cluster.kubernetes_config_map_id
-}
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CREATE EKS-CLUSTER
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-module "vpc" {
-  source     = "github.com/Greg215/terraform-aws-eks//vpc"
+module "eks_vpc" {
+  source     = "github.com/Greg215/terraform-modules//vpc"
   name       = var.name
-  cidr_block = var.vpc_cidr
+  cidr_block = var.cidr_block
 }
 
-module "subnets" {
-  source              = "github.com/Greg215/terraform-aws-eks//subnet"
-  eks_cluster_name    = var.name
-  vpc_id              = module.vpc.vpc_id
-  igw_id              = module.vpc.igw_id
-  nat_gateway_enabled = false
+module "eks_subnets" {
+  source               = "github.com/Greg215/terraform-modules//subnet"
+  name                 = var.name
+  eks_cluster_name     = var.name
+  vpc_id               = module.eks_vpc.vpc_id
+  igw_id               = module.eks_vpc.igw_id
+  nat_instance_enabled = false
 }
 
 # load balancer
 module "network_loadbalancer" {
-  source                = "github.com/Greg215/terraform-aws-eks//nlb"
-  name                  = var.name
-  aws_region            = var.aws_region
-  vpc_id                = module.vpc.vpc_id
-  vpc_public_subnet_ids = module.subnets.public_subnet_ids
-
-  # if enable port 443 make sure below acm enabled
-  aws-load-balancer-ssl-cert-arn = var.aws-load-balancer-ssl-cert-arn
+  source                         = "github.com/Greg215/terraform-modules//nlb"
+  name                           = var.name
+  vpc_id                         = module.eks_vpc.vpc_id
+  vpc_public_subnet_ids          = module.eks_subnets.public_subnet_ids
+  aws-load-balancer-ssl-cert-arn = "arn:aws:acm:eu-central-1:898846401548:certificate/76ba5a65-c64b-46b7-95e3-6eba2b9206c8"
 
   listeners = [
     {
@@ -50,7 +43,7 @@ module "network_loadbalancer" {
         proxy_protocol    = false
         health_check_port = "traffic-port"
       }
-    }
+    },
   ]
 
   # below security group will need to be changed, once we know which port and ip.
@@ -62,20 +55,20 @@ module "network_loadbalancer" {
       cidr_block = ["0.0.0.0/0"]
     }
   ]
-  # this value will be needed when the https required.
-  #  aws-load-balancer-ssl-cert-arn =
 }
 
 module "eks_workers" {
-  source        = "github.com/Greg215/terraform-aws-eks//eks-worker"
-  name          = module.eks_cluster.eks_cluster_id
-  key_name      = var.key_name
-  image_id      = var.image_id
-  instance_type = var.instance_type
-  vpc_id        = module.vpc.vpc_id
-  subnet_ids    = module.subnets.public_subnet_ids
-  min_size      = var.min_size
-  max_size      = var.max_size
+  source                    = "github.com/Greg215/terraform-modules//eks-worker"
+  name                      = module.eks_cluster.eks_cluster_id
+  key_name                  = var.key_name
+  image_id                  = var.image_id
+  instance_type             = var.instance_type
+  vpc_id                    = module.eks_vpc.vpc_id
+  subnet_ids                = module.eks_subnets.private_subnet_ids
+  health_check_type         = var.health_check_type
+  min_size                  = var.min_size
+  max_size                  = var.max_size
+  wait_for_capacity_timeout = var.wait_for_capacity_timeout
 
   cluster_name                       = module.eks_cluster.eks_cluster_id
   cluster_endpoint                   = module.eks_cluster.eks_cluster_endpoint
@@ -84,19 +77,21 @@ module "eks_workers" {
   cluster_security_group_id              = var.cluster_security_group_id
   additional_security_group_ids          = [module.network_loadbalancer.security_group_k8s]
   cluster_security_group_ingress_enabled = var.cluster_security_group_ingress_enabled
-  associate_public_ip_address            = true
+  associate_public_ip_address            = var.associate_public_ip_address
 
   # Auto-scaling policies and CloudWatch metric alarms
-  autoscaling_policies_enabled = false //set false for the policy
+  autoscaling_policies_enabled           = true
+  cpu_utilization_high_threshold_percent = var.cpu_utilization_high_threshold_percent
+  cpu_utilization_low_threshold_percent  = var.cpu_utilization_low_threshold_percent
 
   target_group_arns = concat(module.network_loadbalancer.target_group_arns)
 }
 
 module "eks_cluster" {
-  source     = "github.com/Greg215/terraform-aws-eks//eks-cluster"
+  source     = "github.com/Greg215/terraform-modules//eks-cluster"
   name       = var.name
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.subnets.public_subnet_ids
+  vpc_id     = module.eks_vpc.vpc_id
+  subnet_ids = module.eks_subnets.public_subnet_ids
 
   kubernetes_version    = var.kubernetes_version
   oidc_provider_enabled = false
@@ -106,12 +101,13 @@ module "eks_cluster" {
 }
 
 module "route53" {
-  source  = "github.com/Greg215/terraform-aws-eks//route53-records"
-  zone_id = var.route53_zone_id
+  source  = "github.com/Greg215/terraform-modules//route53-records"
+  zone_id = "Z03161452U35E8DY2I82Q"
   type    = "CNAME"
+
   records = [
     {
-      NAME   = "*.${var.domian}"
+      NAME   = "*.${var.subdomian}"
       RECORD = module.network_loadbalancer.dns_name
       TTL    = "300"
     },

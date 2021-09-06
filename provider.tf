@@ -9,7 +9,7 @@ terraform {
     key    = "circleci-demo-greg/terraform.tfstate"
     region = "ap-southeast-1"
   }
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.13.0"
 }
 
 provider "aws" {
