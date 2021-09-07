@@ -7,10 +7,10 @@ orbs:
 parameters:
   terraform_apply:
     type: boolean
-    default: true
+    default: false
   terraform_destroy:
     type: boolean
-    default: false
+    default: true
 
 jobs:
   slack_notify:
