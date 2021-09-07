@@ -6,7 +6,7 @@
 terraform {
   backend "s3" {
     bucket = "terraform-state-devops-training-bucket"
-    key    = "circleci-demo-greg/terraform.tfstate"
+    key    = "circleci-eks-demo/terraform.tfstate"
     region = "ap-southeast-1"
   }
   required_version = ">= 0.13.0"
