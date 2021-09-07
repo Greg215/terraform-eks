@@ -3,13 +3,13 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 module "eks_vpc" {
-  source     = "github.com/Greg215/terraform-modules//vpc"
+  source     = "github.com/Greg215/terraform-aws-eks//vpc"
   name       = var.name
   cidr_block = var.cidr_block
 }
 
 module "eks_subnets" {
-  source               = "github.com/Greg215/terraform-modules//subnet"
+  source               = "github.com/Greg215/terraform-aws-eks//subnet"
   name                 = var.name
   eks_cluster_name     = var.name
   vpc_id               = module.eks_vpc.vpc_id
@@ -19,7 +19,7 @@ module "eks_subnets" {
 
 # load balancer
 module "network_loadbalancer" {
-  source                         = "github.com/Greg215/terraform-modules//nlb"
+  source                         = "github.com/Greg215/terraform-aws-eks//nlb"
   name                           = var.name
   vpc_id                         = module.eks_vpc.vpc_id
   vpc_public_subnet_ids          = module.eks_subnets.public_subnet_ids
@@ -58,7 +58,7 @@ module "network_loadbalancer" {
 }
 
 module "eks_workers" {
-  source                    = "github.com/Greg215/terraform-modules//eks-worker"
+  source                    = "github.com/Greg215/terraform-aws-eks//eks-worker"
   name                      = module.eks_cluster.eks_cluster_id
   key_name                  = var.key_name
   image_id                  = var.image_id
@@ -88,7 +88,7 @@ module "eks_workers" {
 }
 
 module "eks_cluster" {
-  source     = "github.com/Greg215/terraform-modules//eks-cluster"
+  source     = "github.com/Greg215/terraform-aws-eks//eks-cluster"
   name       = var.name
   vpc_id     = module.eks_vpc.vpc_id
   subnet_ids = module.eks_subnets.public_subnet_ids
@@ -101,7 +101,7 @@ module "eks_cluster" {
 }
 
 module "route53" {
-  source  = "github.com/Greg215/terraform-modules//route53-records"
+  source  = "github.com/Greg215/terraform-aws-eks//route53-records"
   zone_id = "Z07374591FC76OBQXEXUL"
   type    = "CNAME"
 
