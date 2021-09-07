@@ -39,9 +39,14 @@ jobs:
           event: always
           channel: circleci-notification
 
-  slack_notify_create:
+  slack_notify_action:
     machine:
       image: ubuntu-1604:202007-01
+    parameters:
+      terraform_action:
+        description: |
+          If to create to remove the cluster
+        type: string
     steps:
       - slack/notify:
           custom: |
@@ -52,33 +57,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "Create the EKS cluster via terraform by $CIRCLE_USERNAME" has been done,
-                      "emoji": true
-                    }
-                  ]
-                },
-                {
-                  "type": "divider"
-                }
-              ]
-            }
-          event: always
-          channel: circleci-notification
-
-  slack_notify_destroy:
-    machine:
-      image: ubuntu-1604:202007-01
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "Remove the EKS cluster via terraform by $CIRCLE_USERNAME" has been done,
+                      "text": "<< parameters.terraform_action >> the EKS cluster via terraform by $CIRCLE_USERNAME has been done",
                       "emoji": true
                     }
                   ]
@@ -178,10 +157,6 @@ jobs:
       - image: hashicorp/terraform:1.0.5
     steps:
       - checkout
-#      - terraform/install:
-#          arch: amd64
-#          os: linux
-#          terraform_version: 1.0.5
       - run:
           name: install curl
           command: |
@@ -229,7 +204,8 @@ workflows:
           requires:
             - slack_approve
 
-      - slack_notify_create:
+      - slack_notify_action:
+          terraform_action: create
           requires:
             - terraform_apply
 
@@ -269,6 +245,7 @@ workflows:
           requires:
             - terraform/plan
 
-      - slack_notify_destroy:
+      - slack_notify_action:
+          terraform_action: remove
           requires:
             - terraform_destroy
