@@ -64,7 +64,7 @@ module "eks_workers" {
   image_id                  = var.image_id
   instance_type             = var.instance_type
   vpc_id                    = module.eks_vpc.vpc_id
-  subnet_ids                = module.eks_subnets.private_subnet_ids
+  subnet_ids                = module.eks_subnets.public_subnet_ids
   health_check_type         = var.health_check_type
   min_size                  = var.min_size
   max_size                  = var.max_size
