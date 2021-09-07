@@ -7,10 +7,10 @@ orbs:
 parameters:
   terraform_apply:
     type: boolean
-    default: false
+    default: true
   terraform_destroy:
     type: boolean
-    default: true
+    default: false
 
 jobs:
   slack_notify:
@@ -27,6 +27,37 @@ jobs:
                     {
                       "type": "plain_text",
                       "text": "Start to Create or Update or Remove the EKS cluster via terraform by $CIRCLE_USERNAME",
+                      "emoji": true
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+          event: always
+          channel: circleci-notification
+
+  slack_notify_action:
+    machine:
+      image: ubuntu-1604:202007-01
+    parameters:
+      terraform_action:
+        description: |
+          If to create to remove the cluster
+        type: string
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "<< parameters.terraform_action >> the EKS cluster via terraform by $CIRCLE_USERNAME" has been done,
                       "emoji": true
                     }
                   ]
@@ -177,6 +208,11 @@ workflows:
           requires:
             - slack_approve
 
+      - slack_notify_action:
+          terraform_action: create
+          requires:
+            - terraform_apply
+
   terraform_remove_eks_cluster:
     when: << pipeline.parameters.terraform_destroy >>
     jobs:
@@ -194,18 +230,26 @@ workflows:
           checkout: true
           requires:
             - slack_approve
+
       - terraform/validate:
           checkout: true
           requires:
             - terraform/fmt
+
       - terraform/plan:
           checkout: true
           persist-workspace: true
           requires:
             - terraform/validate
+
       - terraform_destroy:
           filters:
             branches:
               only: master
           requires:
             - terraform/plan
+
+      - slack_notify_action:
+          terraform_action: remove
+          requires:
+            - terraform_destroy
